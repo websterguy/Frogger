@@ -1,0 +1,35 @@
+class Main {
+  function void main() {
+    var Car car1, car2, car3;
+    let car1 = Car.new(-1, 1, 1);
+    let car2 = Car.new(2, 2, 1);
+    let car3 = Car.new(-3, 3, 1);
+    while (true) {
+      if (car1.isActive()) {
+        do car1.move();
+      }
+      if (car2.isActive()) {
+        do car2.move();
+      }
+      if (car3.isActive()) {
+        do car3.move();
+      }
+
+      do Screen.clearScreen();
+      do Screen.drawLine(128, 0, 128, 255);
+      do Screen.drawLine(384, 0, 384, 255);
+      if (car1.isActive()) {
+        do car1.draw();
+      }
+      if (car2.isActive()) {
+        do car2.draw();
+      }
+      if (car3.isActive()) {
+        do car3.draw();
+      }
+
+      do Sys.wait(60);
+    }
+    return;
+  }
+}

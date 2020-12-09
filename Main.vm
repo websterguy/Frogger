@@ -1,0 +1,98 @@
+function Main.main 3
+push constant 1
+neg
+push constant 1
+push constant 1
+call Car.new 3
+pop local 0
+push constant 2
+push constant 2
+push constant 1
+call Car.new 3
+pop local 1
+push constant 3
+neg
+push constant 3
+push constant 1
+call Car.new 3
+pop local 2
+label WHILE_EXP0
+push constant 0
+not
+not
+if-goto WHILE_END0
+push local 0
+call Car.isActive 1
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 0
+call Car.move 1
+pop temp 0
+label IF_FALSE0
+push local 1
+call Car.isActive 1
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 1
+call Car.move 1
+pop temp 0
+label IF_FALSE1
+push local 2
+call Car.isActive 1
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 2
+call Car.move 1
+pop temp 0
+label IF_FALSE2
+call Screen.clearScreen 0
+pop temp 0
+push constant 128
+push constant 0
+push constant 128
+push constant 255
+call Screen.drawLine 4
+pop temp 0
+push constant 384
+push constant 0
+push constant 384
+push constant 255
+call Screen.drawLine 4
+pop temp 0
+push local 0
+call Car.isActive 1
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 0
+call Car.draw 1
+pop temp 0
+label IF_FALSE3
+push local 1
+call Car.isActive 1
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push local 1
+call Car.draw 1
+pop temp 0
+label IF_FALSE4
+push local 2
+call Car.isActive 1
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push local 2
+call Car.draw 1
+pop temp 0
+label IF_FALSE5
+push constant 60
+call Sys.wait 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return

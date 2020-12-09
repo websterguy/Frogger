@@ -1,0 +1,108 @@
+/*
+  Class for vehicle obstacles that move horizontally across the screen at a given speed.
+
+  Author: Kevin Webb
+*/
+class Car {
+  field int velocity; // positive speed moving left->right, negative moving right->left
+  field int type; // 1 car, 2 racecar, 3 truck
+  field int lane;
+  field int x, y, width, widthMax, height, xMin, xMax;
+  field boolean growing, shrinking, active;
+
+  constructor Car new (int velocityNew, int laneNew, int typeNew) {
+    let velocity = velocityNew;
+    let lane = laneNew;
+    let type = typeNew;
+    let width = 0;
+    let height = 15;
+    let growing = true;
+    let shrinking = false;
+    let active = true;
+    let xMin = 128;
+    let xMax = 384;
+
+    if (velocity < 0) {
+      let x = xMax;
+    }
+    else {
+      let x = xMin;
+    }
+
+    if (lane = 1) {
+      let y = 210;
+    }
+    if (lane = 2) {
+      let y = 190;
+    }
+    if (lane = 3) {
+      let y = 170;
+    }
+
+    if (type = 1) {
+      let widthMax = 30;
+    }
+
+    return this;
+  }
+
+  method void move() {
+    //do Screen.setColor(false);
+    //do Screen.drawRectangle(x, y, x + width, y + height);
+
+    if (growing) {
+      let width = Math.min(width + Math.abs(velocity), widthMax);
+      if (width = widthMax) {
+        let growing = false;
+      }
+      if (velocity < 0) {
+        let x = x + velocity;
+      }
+    }
+    else {
+      let x = x + velocity;
+    }
+
+
+    if (~shrinking) {
+      if ((velocity < 0) & (x < xMin)) {
+        let x = xMin;
+        let shrinking = true;
+      }
+      if ((velocity > 0) & ((x + width) > xMax)) {
+        let width = xMax - x;
+        let shrinking = true;
+      }
+    }
+    else {
+      if (velocity < 0) {
+        let x = xMin;
+      }
+      let width = width - Math.abs(velocity);
+    }
+
+    //do Output.printInt(width);
+    do Screen.setColor(true);
+    if (width - 1 < 0) {
+      let active = false;
+    }
+
+    return;
+  }
+
+  method void draw() {
+    do Screen.drawRectangle(x, y, x + width, y + height);
+    return;
+  }
+
+  method boolean isActive() {
+    return active;
+  }
+
+  /* Disposes of this object */
+  method void dispose() {
+    do Memory.deAlloc(this);
+    return;
+  }
+
+}
