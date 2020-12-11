@@ -56,6 +56,11 @@ push constant 0
 pop this 4
 push constant 0
 return
+function Goal.isOccupied 0
+push argument 0
+pop pointer 0
+push this 4
+return
 function Goal.draw 7
 push argument 0
 pop pointer 0

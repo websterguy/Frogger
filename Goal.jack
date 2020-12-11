@@ -52,6 +52,15 @@ class Goal {
     }
 
     /*
+     * Returns the status of if the goal is occupied
+     *
+     * return   true if occupied, otherwise false
+     */
+    method boolean isOccupied() {
+        return occupied;
+    }
+
+    /*
      * Draws the goal on the screen as a white rectangle. Occupied goals contain a smile
      */
     method void draw() {
