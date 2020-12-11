@@ -1,0 +1,149 @@
+class WaterLane {
+    static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
+    field int y;
+    field Array logArray;
+    field boolean logIsGrowing;
+
+    /*
+     * Initializes static values. Must be run at start of program.
+     *
+     * param xMin   left border of play area
+     * param xMax   right border of play area
+     */
+    function void init(int xMin, int xMax) {
+        let X_MIN = xMin + 1;
+        let X_MAX = xMax - 1;
+        return;
+    }
+
+    /*
+     * Constructor creates a new water lane and fills it with logs based on the lane number and level number
+     *
+     * param yNew   y coordinate for the lane
+     * param lane   the number of the lane, 0 = bottom water lane, 4 = top
+     * param level  the current game level
+     */
+    constructor WaterLane new(int yNew, int lane, int level) {
+        let y = yNew;
+
+        let logArray = Array.new(5);
+
+        if (lane = 0) { // 4 medium speed medium length moving left
+            let logArray[0] = Log.new(-3, X_MIN, y + 1, 48, 1, false, true, true);
+            let logArray[1] = Log.new(-3, 200, y + 1, 0, 1, false, false, true);
+            let logArray[2] = Log.new(-3, 275, y + 1, 0, 1, false, false, true);
+            let logArray[3] = Log.new(-3, 350, y + 1, 0, 1, true, false, true);
+            let logIsGrowing = true;
+        }
+        if (lane = 1) { // 4 slow medium length moving right
+            let logArray[0] = Log.new(2, X_MIN, y + 1, 0, 1, false, false, false);
+            let logArray[1] = Log.new(2, 170, y + 1, 0, 1, false, false, true);
+            let logArray[2] = Log.new(2, 255, y + 1, 0, 1, false, false, true);
+            let logArray[3] = Log.new(2, 350, y + 1, X_MAX - 350, 1, false, true, true);
+            let logIsGrowing = false;
+        }
+        if (lane = 2) { // 3 fast long moving right
+            let logArray[0] = Log.new(4, X_MIN, y + 1, 0, 3, false, false, false);
+            let logArray[1] = Log.new(4, 160, y + 1, 0, 3, false, false, true);
+            let logArray[2] = Log.new(4, 300, y + 1, 0, 3, false, true, true);
+            let logIsGrowing = false;
+        }
+        if (lane = 3) { // 4 medium speed short moing left
+            let logArray[0] = Log.new(-2, 170, y + 1, 0, 0, false, false, true);
+            let logArray[1] = Log.new(-2, 235, y + 1, 0, 0, false, false, true);
+            let logArray[2] = Log.new(-2, 300, y + 1, 0, 0, false, false, true);
+            let logArray[3] = Log.new(-2, 370, y + 1, 0, 0, true, false, true);
+            let logIsGrowing = true;
+        }
+        if (lane = 4) { //4 medium speed medium long moving right
+            let logArray[0] = Log.new(3, X_MIN, y + 1, 0, 2, false, false, false);
+            let logArray[1] = Log.new(3, 135, y + 1, 0, 2, false, false, true);
+            let logArray[2] = Log.new(3, 235, y + 1, 0, 2, false, false, true);
+            let logArray[3] = Log.new(3, 335, y + 1, 0, 2, false, true, true);
+            let logIsGrowing = false;
+        }
+        return this;
+    }
+
+    /*
+     * Cycles through array of logs and updates their positions if they exist
+     */
+    method void updateLogs() {
+        var int i;
+        var Log currentLog;
+
+        let logIsGrowing = false;
+        let i = 0;
+        while (i < 5) {
+            if (~(logArray[i] = null)) {
+                let currentLog = logArray[i];
+                if (currentLog.isActive()) {
+                    do currentLog.move();
+                }
+                if (currentLog.isGrowing()) {
+                    let logIsGrowing = true;
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Cycles through array of logs and draws them if they exist. Resets them if they have moved off screen.
+     */
+    method void drawLogs() {
+        var int i;
+        var Log currentLog;
+
+        do Screen.setColor(false);
+        do Screen.drawRectangle(X_MIN, y, X_MAX, y + 16);
+        let i = 0;
+        while (i < 5) {
+            if(~(logArray[i] = null)) {
+                let currentLog = logArray[i];
+                if (currentLog.isActive()) {
+                    do currentLog.draw();
+                }
+                else {
+                    if (~logIsGrowing) {
+                        do currentLog.reset();
+                    }
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Checks if any log in the lane has collided with Frogger. If so, returns the velocity of that log so Frogger can be moved with it. If not, returns 0 so Frogger can be killed
+     *
+     * return   The velocity of the log Frogger is on, or 0 if Frogger is not on one.
+     */
+    method int checkCollision(int froggerLeft, int froggerRight) {
+        var int i;
+        var Log currentLog;
+
+        let i = 0;
+        while (i < 5) {
+            if (~(logArray[i] = null)) {
+                let currentLog = logArray[i];
+                // if Log left edge left of Frogger's right, but Log's right edge not left of frogger's left, there was a collision
+                if ((currentLog.getLeftEdge() < froggerRight) & ~(currentLog.getRightEdge() < froggerLeft)) {
+                    return currentLog.getVelocity();
+                }
+            }
+            let i = i + 1;
+        }
+        return 0;
+    }
+
+    /*
+     * Disposes of this object
+     */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
