@@ -1,0 +1,216 @@
+/*
+ * Class for vehicle obstacles that move horizontally across the screen at a given speed.
+ *
+ * Author: Kevin Webb
+ */
+class Log {
+    field int velocity; // positive speed moving left->right, negative moving right->left
+    field int type; // 0 short, 1 medium, 3 medium long, 4 long
+    field int lane;
+    field int x, y, width, widthMax, respawnTimer;
+    field boolean growing, shrinking, active;
+    static int HEIGHT;
+    static Array TYPE_WIDTH_ARRAY;
+
+    /*
+     * Initializes static values. Must be run at the beginning of the program.
+     */
+    function void init() {
+        let HEIGHT = 15;
+        let TYPE_WIDTH_ARRAY = Array.new(4);
+        let TYPE_WIDTH_ARRAY[0] = 35;
+        let TYPE_WIDTH_ARRAY[1] = 50;
+        let TYPE_WIDTH_ARRAY[2] = 65;
+        let TYPE_WIDTH_ARRAY[3] = 100;
+        return;
+    }
+
+    /*
+     * Constructor for a new Log. Sets velocity, log lane, log type, x position, and if log is growing
+     *
+     * param velocityNew    number of pixels to move log each update, >0 for left to right, <0 for right to left
+     * param xNew           x coordinate of top left of log
+     * param yNew           y coordinate of top left of log
+     * param widthNew       width for logs growing from left
+     * param typeNew        log type. 0 short, 1 normal, 3 long
+     * param growingNew     true if log is generated near edge of screen, growing away from the edge
+     * param shrinkingNew   true if log is generated near edge of screen, shrinking towards edge
+     * param activeNew      true if log is currently visible
+     */
+    constructor Log new(int velocityNew, int xNew, int yNew, int widthNew, int typeNew, boolean growingNew, boolean shrinkingNew, boolean activeNew) {
+        let velocity = velocityNew;
+        let type = typeNew;
+        let growing = growingNew;
+        let shrinking = shrinkingNew;
+        let active = activeNew;
+        let respawnTimer = 40;
+
+        let x = xNew;
+        let y = yNew;
+        let widthMax = TYPE_WIDTH_ARRAY[type];
+
+        // Calculate initial width of log if it's still growing
+        if (growing) {
+            if (velocity > 0) {
+                let width = widthNew;
+            }
+            else {
+                let width = Main.getXMax() - x;
+            }
+        }
+        else {
+            if (shrinking) {
+                if (velocity > 0) {
+                    let width = Main.getXMax() - x;
+                }
+                else {
+                    let width = widthNew;
+                }
+            }
+            else {
+                let width = widthMax;
+            }
+        }
+
+        return this;
+    }
+
+    /*
+     * Decrements respawnTimer by abs(velocity), and respawns log at edge of screen if the timer < 0
+     */
+    method void reset() {
+        // Set at right of screen if moving left or left of screen moving right
+        if (respawnTimer < 0) {
+            if (velocity < 0) {
+                let x = Main.getXMax();
+            }
+            else {
+                let x = Main.getXMin();
+            }
+
+            let active = true;
+            let growing = true;
+            let shrinking = false;
+            let width = 0;
+            let respawnTimer = 40;
+        }
+        else {
+            let respawnTimer = respawnTimer - Math.abs(velocity);
+        }
+        return;
+    }
+
+    /*
+     * Calculates new position and width of log after moving 1 velocity unit
+     */
+    method void move() {
+        // If growing, Calculate new width based on the velocity, but stop at widthMax
+        // x coordinate doesn't change if growing to the right
+        if (growing) {
+            let width = Math.min(width + Math.abs(velocity), widthMax);
+            if (width = widthMax) {
+                let growing = false;
+            }
+            if (velocity < 0) {
+                let x = x + velocity;
+            }
+        }
+        else {
+            let x = x + velocity;
+        }
+
+        // If not shrinking and run over the edge, move back and start shrinking
+        if (~shrinking) {
+            if ((velocity < 0) & (x < Main.getXMin())) {
+                let x = Main.getXMin();
+                let shrinking = true;
+            }
+            if ((velocity > 0) & ((x + width) > Main.getXMax())) {
+                let width = Main.getXMax() - x;
+                let shrinking = true;
+            }
+        }
+        // If shrinking calculate new width based on velocity.
+        // x coordinate doesn't change if shrinking to the left
+        else {
+            if (velocity < 0) {
+                let x = Main.getXMin();
+            }
+            let width = width - Math.abs(velocity);
+        }
+
+        // If the log has shrunk all the way, it has left the screen and is inactive
+        if (width - 1 < 0) {
+            let active = false;
+        }
+
+        return;
+    }
+
+    /*
+     * Draws the rectangular log on the screen. Logs are not filled
+     */
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + width, y + HEIGHT);
+
+        if (width > 1) {
+            do Screen.setColor(false);
+            do Screen.drawRectangle(x + 1, y + 1, x + width - 1, y + HEIGHT - 1);
+        }
+        return;
+    }
+
+    /*
+     * Returns if the log is currently active
+     *
+     * return    true if active
+     */
+    method boolean isActive() {
+        return active;
+    }
+
+    /*
+     * Returns if the log is currently growing
+     *
+     * return    true if growing
+     */
+    method boolean isGrowing() {
+        return growing;
+    }
+
+    /*
+     * Returns the left edge coordinate of the log for collision checks
+     *
+     * return   Left edge x value for the log
+     */
+    method int getLeftEdge() {
+        return x;
+    }
+
+    /*
+     * Returns the right edge coordinate of the log for collision checks
+     *
+     * return   Right edge x value for the log
+     */
+    method int getRightEdge() {
+        return x + width;
+    }
+
+    /*
+     * Returns the velocity of the log
+     *
+     * return   the velocity of the log
+     */
+    method int getVelocity() {
+        return velocity;
+    }
+
+    /*
+    * Disposes of this object
+    */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

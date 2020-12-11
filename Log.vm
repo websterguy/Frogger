@@ -1,0 +1,352 @@
+function Log.init 0
+push constant 15
+pop static 0
+push constant 4
+call Array.new 1
+pop static 1
+push constant 0
+push static 1
+add
+push constant 35
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push static 1
+add
+push constant 50
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push static 1
+add
+push constant 65
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push static 1
+add
+push constant 100
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function Log.new 0
+push constant 11
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 4
+pop this 1
+push argument 5
+pop this 8
+push argument 6
+pop this 9
+push argument 7
+pop this 10
+push constant 40
+pop this 7
+push argument 1
+pop this 3
+push argument 2
+pop this 4
+push this 1
+push static 1
+add
+pop pointer 1
+push that 0
+pop this 6
+push this 8
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+push constant 0
+gt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push argument 3
+pop this 5
+goto IF_END1
+label IF_FALSE1
+call Main.getXMax 0
+push this 3
+sub
+pop this 5
+label IF_END1
+goto IF_END0
+label IF_FALSE0
+push this 9
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 0
+push constant 0
+gt
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+call Main.getXMax 0
+push this 3
+sub
+pop this 5
+goto IF_END3
+label IF_FALSE3
+push argument 3
+pop this 5
+label IF_END3
+goto IF_END2
+label IF_FALSE2
+push this 6
+pop this 5
+label IF_END2
+label IF_END0
+push pointer 0
+return
+function Log.reset 0
+push argument 0
+pop pointer 0
+push this 7
+push constant 0
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+push constant 0
+lt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+call Main.getXMax 0
+pop this 3
+goto IF_END1
+label IF_FALSE1
+call Main.getXMin 0
+pop this 3
+label IF_END1
+push constant 0
+not
+pop this 10
+push constant 0
+not
+pop this 8
+push constant 0
+pop this 9
+push constant 0
+pop this 5
+push constant 40
+pop this 7
+goto IF_END0
+label IF_FALSE0
+push this 7
+push this 0
+call Math.abs 1
+sub
+pop this 7
+label IF_END0
+push constant 0
+return
+function Log.move 0
+push argument 0
+pop pointer 0
+push this 8
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 5
+push this 0
+call Math.abs 1
+add
+push this 6
+call Math.min 2
+pop this 5
+push this 5
+push this 6
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+pop this 8
+label IF_FALSE1
+push this 0
+push constant 0
+lt
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 3
+push this 0
+add
+pop this 3
+label IF_FALSE2
+goto IF_END0
+label IF_FALSE0
+push this 3
+push this 0
+add
+pop this 3
+label IF_END0
+push this 9
+not
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push this 0
+push constant 0
+lt
+push this 3
+call Main.getXMin 0
+lt
+and
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+call Main.getXMin 0
+pop this 3
+push constant 0
+not
+pop this 9
+label IF_FALSE4
+push this 0
+push constant 0
+gt
+push this 3
+push this 5
+add
+call Main.getXMax 0
+gt
+and
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+call Main.getXMax 0
+push this 3
+sub
+pop this 5
+push constant 0
+not
+pop this 9
+label IF_FALSE5
+goto IF_END3
+label IF_FALSE3
+push this 0
+push constant 0
+lt
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+call Main.getXMin 0
+pop this 3
+label IF_FALSE6
+push this 5
+push this 0
+call Math.abs 1
+sub
+pop this 5
+label IF_END3
+push this 5
+push constant 1
+sub
+push constant 0
+lt
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push constant 0
+pop this 10
+label IF_FALSE7
+push constant 0
+return
+function Log.draw 0
+push argument 0
+pop pointer 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push this 3
+push this 4
+push this 3
+push this 5
+add
+push this 4
+push static 0
+add
+call Screen.drawRectangle 4
+pop temp 0
+push this 5
+push constant 1
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push this 3
+push constant 1
+add
+push this 4
+push constant 1
+add
+push this 3
+push this 5
+add
+push constant 1
+sub
+push this 4
+push static 0
+add
+push constant 1
+sub
+call Screen.drawRectangle 4
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Log.isActive 0
+push argument 0
+pop pointer 0
+push this 10
+return
+function Log.isGrowing 0
+push argument 0
+pop pointer 0
+push this 8
+return
+function Log.getLeftEdge 0
+push argument 0
+pop pointer 0
+push this 3
+return
+function Log.getRightEdge 0
+push argument 0
+pop pointer 0
+push this 3
+push this 5
+add
+return
+function Log.getVelocity 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Log.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
