@@ -1,35 +1,242 @@
 class Main {
-  function void main() {
-    var Car car1, car2, car3;
-    let car1 = Car.new(-1, 1, 1);
-    let car2 = Car.new(2, 2, 1);
-    let car3 = Car.new(-3, 3, 1);
-    while (true) {
-      if (car1.isActive()) {
-        do car1.move();
-      }
-      if (car2.isActive()) {
-        do car2.move();
-      }
-      if (car3.isActive()) {
-        do car3.move();
-      }
+    static int X_MAX, X_MIN;
 
-      do Screen.clearScreen();
-      do Screen.drawLine(128, 0, 128, 255);
-      do Screen.drawLine(384, 0, 384, 255);
-      if (car1.isActive()) {
-        do car1.draw();
-      }
-      if (car2.isActive()) {
-        do car2.draw();
-      }
-      if (car3.isActive()) {
-        do car3.draw();
-      }
+    function void main() {
+        var Array carLanes, waterLanes, goals;
+        var Frogger frogger;
+        var char key;
+        var boolean justMoved, carCollisionCheck, goalCheck;
+        var int logCollisionCheck;
+        var int lives, timer, respawnCountdown;
+        var int i;
+        var CarLane currentCarLane;
+        var WaterLane currentWaterLane;
+        var Goal currentGoal;
+        var String livesLabel, timeLabel;
 
-      do Sys.wait(60);
+        let livesLabel = "Lives";
+        let timeLabel = "Time";
+
+        let X_MIN = 128;
+        let X_MAX = 384;
+
+        do Car.init();
+        do Log.init();
+        do CarLane.init(X_MIN, X_MAX);
+        do WaterLane.init(X_MIN, X_MAX);
+
+        let carLanes = Array.new(5);
+        let carLanes[0] = CarLane.new(216, 0, 1);
+        let carLanes[1] = CarLane.new(197, 1, 1);
+        let carLanes[2] = CarLane.new(178, 2, 1);
+        let carLanes[3] = CarLane.new(159, 3, 1);
+        let carLanes[4] = CarLane.new(140, 4, 1);
+        let waterLanes = Array.new(5);
+        let waterLanes[0] = WaterLane.new(99, 0, 1);
+        let waterLanes[1] = WaterLane.new(80, 1, 1);
+        let waterLanes[2] = WaterLane.new(61, 2, 1);
+        let waterLanes[3] = WaterLane.new(42, 3, 1);
+        let waterLanes[4] = WaterLane.new(23, 4, 1);
+        let goals = Array.new(5);
+        let goals[0] = Goal.new(X_MIN + 10, 2, 22, 20);
+        let goals[1] = Goal.new(X_MIN + 64, 2, 22, 20);
+        let goals[2] = Goal.new(X_MIN + 117, 2, 22, 20);
+        let goals[3] = Goal.new(X_MIN + 173, 2, 22, 20);
+        let goals[4] = Goal.new(X_MIN + 224, 2, 22, 20);
+
+        // let car2 = Car.new(2, 1, 1, 300, false);
+        // let car3 = Car.new(-3, 2, 0, 200, false);
+        // let car4 = Car.new(-1, 3, 1, 5, true);
+        // let car5 = Car.new(2, 4, 2, 150, false);
+        let frogger = Frogger.new();
+        let justMoved = false;
+        let lives = 8;
+        let timer = 1440;
+        let respawnCountdown = 50; // 50 cycles until respawn after death
+
+
+        do Screen.drawLine(X_MIN, 0, X_MIN, 255);
+        do Screen.drawLine(X_MAX, 0, X_MAX, 255);
+        do Screen.drawRectangle(X_MIN, 0, X_MAX, 22);
+
+        // Lane dividers for diagnostic
+        do Screen.drawLine(X_MIN, 234, X_MAX, 234);
+        // do Screen.drawLine(X_MIN, 215, X_MAX, 215);
+        // do Screen.drawLine(X_MIN, 196, X_MAX, 196);
+        // do Screen.drawLine(X_MIN, 177, X_MAX, 177);
+        // do Screen.drawLine(X_MIN, 158, X_MAX, 158);
+        do Screen.drawLine(X_MIN, 139, X_MAX, 139);
+        do Screen.drawLine(X_MIN, 117, X_MAX, 117);
+        // do Screen.drawLine(X_MIN, 98, X_MAX, 98);
+        // do Screen.drawLine(X_MIN, 79, X_MAX, 79);
+        // do Screen.drawLine(X_MIN, 60, X_MAX, 60);
+        // do Screen.drawLine(X_MIN, 41, X_MAX, 41);
+        // do Screen.drawLine(X_MIN, 22, X_MAX, 22);
+
+        while (lives > 0) {
+            let key = Keyboard.keyPressed();
+            if (~justMoved & frogger.isAlive()) {
+                if (key = 130) {
+                    do frogger.moveLeft();
+                    let justMoved = true;
+                }
+                if (key = 131) {
+                    do frogger.moveUp();
+                    let justMoved = true;
+                }
+                if (key = 132) {
+                    do frogger.moveRight();
+                    let justMoved = true;
+                }
+                if (key = 133) {
+                    do frogger.moveDown();
+                    let justMoved = true;
+                }
+            }
+            else {
+                let justMoved = false;
+            }
+
+            let i = 0;
+            while (i < 5) {
+                let currentCarLane = carLanes[i];
+                do currentCarLane.updateCars();
+                if (frogger.currentLane() = (i + 1)) {
+                    let carCollisionCheck = currentCarLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
+                    if (carCollisionCheck) {
+                        if (frogger.isAlive()) {
+                            do frogger.kill();
+                            let lives = lives - 1;
+                        }
+                    }
+                }
+                let i = i + 1;
+            }
+
+            let i = 0;
+            while (i < 5) {
+                let currentWaterLane = waterLanes[i];
+                do currentWaterLane.updateLogs();
+                if (frogger.currentLane() = (i + 7)) {
+                    let logCollisionCheck = currentWaterLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
+                    if (logCollisionCheck = 0) {
+                        if (frogger.isAlive()) {
+                            do frogger.kill();
+                            let lives = lives - 1;
+                        }
+                    }
+                }
+                let i = i + 1;
+            }
+
+            if (frogger.currentLane() = 12) {
+                let i = 0;
+                while (i < 5) {
+                    let currentGoal = goals[i];
+                    // don't lose a true if one is obtained
+                    let goalCheck = (goalCheck | currentGoal.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge()));
+                    let i = i + 1;
+                }
+
+                if (goalCheck) {
+                    do frogger.reset();
+                    let timer = 1440;
+                }
+                else {
+                    if (frogger.isAlive()) {
+                        do frogger.kill();
+                        let lives = lives - 1;
+                    }
+                }
+                let logCollisionCheck = 0;
+                let goalCheck = false;
+            }
+
+            if (~(logCollisionCheck = 0) & frogger.isAlive()) {
+                do frogger.moveWithLog(logCollisionCheck);
+            }
+
+            do Output.moveCursor(1, 4);
+            do Output.printString(livesLabel);
+            do Output.moveCursor(2, 6);
+            do Output.printInt(lives);
+            do Output.moveCursor(1, 54);
+            do Output.printString(timeLabel);
+            do Output.moveCursor(2, 55);
+            if (timer > 239) {
+                do Output.printInt(timer / 24);
+            }
+            else {
+                do Output.printInt(0);
+                do Output.printInt(timer/24);
+            }
+            do Screen.setColor(false);
+            do Screen.drawRectangle(X_MIN + 1, 235, X_MAX - 1, 255);
+            do Screen.drawRectangle(X_MIN + 1, 118, X_MAX - 1, 138);
+            do Screen.setColor(true);
+
+            if (respawnCountdown = 0) {
+                let respawnCountdown = 50;
+                let logCollisionCheck = 0;
+                do frogger.reset();
+                let timer = 1440;
+                do Screen.drawLine(X_MIN, 0, X_MIN, 255);
+                do Screen.drawLine(X_MAX, 0, X_MAX, 255);
+                do Screen.drawRectangle(X_MIN, 0, X_MAX, 22);
+                do Screen.setColor(false);
+                do Screen.drawRectangle(X_MIN - 10, 0, X_MIN - 1, 255);
+                do Screen.drawRectangle(X_MAX + 1, 0, X_MAX + 10, 255);
+            }
+            if (respawnCountdown > -1 & ~(frogger.isAlive())) {
+                let respawnCountdown = respawnCountdown - 1;
+            }
+
+            let i = 0;
+            while (i < 5) {
+                let currentCarLane = carLanes[i];
+                do currentCarLane.drawCars();
+                let i = i + 1;
+            }
+
+            let i = 0;
+            while (i < 5) {
+                let currentWaterLane = waterLanes[i];
+                do currentWaterLane.drawLogs();
+                let i = i + 1;
+            }
+
+            let i = 0;
+            while (i < 5) {
+                let currentGoal = goals[i];
+                do currentGoal.draw();
+                let i = i + 1;
+            }
+
+            let timer = timer - 1;
+            if (timer < 1) {
+                let timer = 0;
+                if (frogger.isAlive()) {
+                    do frogger.kill();
+                    let lives = lives - 1;
+                }
+            }
+
+            do frogger.draw();
+
+            // if (frogger.currentCarLane() > 5 & frogger.isAlive()) {
+            //     do frogger.moveWithLog(5);
+            // }
+
+            do Sys.wait(60);
+        }
+        return;
     }
-    return;
-  }
+
+    function int getXMax() {
+        return X_MAX;
+    }
+
+    function int getXMin() {
+        return X_MIN;
+    }
 }
