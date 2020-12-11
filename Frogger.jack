@@ -1,10 +1,185 @@
+/*
+ * Represents Frogger, the frog who jumps around the screen trying not to die
+ */
 class Frogger {
+    field int x, y, halfWidth, horizontalSpeed, lane;
+    field boolean alive;
+    field Array laneYArray; // 0 start, 1-5 cars, 6 median, 7-11 water, 12 end
 
-  constructor Frogger new() {
-    return this;
-  }
+    /*
+     * Constructor creates Frogger in the bottom lane center and initializes the array for lane y values
+     */
+    constructor Frogger new() {
+        let alive = true;
+        let x = 256;
+        let halfWidth = 7;
+        let horizontalSpeed = 7;
+        let lane = 0;
+        let laneYArray = Array.new(13);
+        let laneYArray[0] = 236;
+        let laneYArray[1] = 217;
+        let laneYArray[2] = 198;
+        let laneYArray[3] = 179;
+        let laneYArray[4] = 160;
+        let laneYArray[5] = 141;
+        let laneYArray[6] = 121;
+        let laneYArray[7] = 100;
+        let laneYArray[8] = 81;
+        let laneYArray[9] = 62;
+        let laneYArray[10] = 43;
+        let laneYArray[11] = 24;
+        let laneYArray[12] = 4;
+        let y = laneYArray[lane] + (halfWidth);
+        return this;
+    }
 
-  method void run() {
-    return;
-  }
+    /*
+     * Moves Frogger up one lane
+     */
+    method void moveUp() {
+        let lane = lane + 1;
+        let y = laneYArray[lane] + halfWidth;
+        return;
+    }
+
+    /*
+     * Moves Frogger down one lane
+     */
+    method void moveDown() {
+        if (lane > 0) {
+            let lane = lane - 1;
+            let y = laneYArray[lane] + halfWidth;
+        }
+        return;
+    }
+
+    /*
+     * Moves Frogger right by pixels equal to horizontalSpeed unless it puts Frogger past the right edge
+     */
+    method void moveRight() {
+        let x = x + horizontalSpeed;
+        if ((x + halfWidth) > Main.getXMax()) {
+            let x = x - halfWidth;
+        }
+        return;
+    }
+
+    /*
+     * Moves Frogger left by pixels equal to horizontalSpeed unless it puts Frogger past the left edge
+     */
+    method void moveLeft() {
+        let x = x - horizontalSpeed;
+        if ((x - halfWidth) < Main.getXMin()) {
+            let x = x + halfWidth;
+        }
+        return;
+    }
+
+    /*
+     * Moves Frogger a given number of pixels to move with a log. If this makes Frogger touch the edge of the screen, he dies.
+     */
+    method void moveWithLog(int logVelocity) {
+        let x = x + logVelocity;
+        if (((x - halfWidth) < Main.getXMin()) | ((x + halfWidth) > Main.getXMax())) {
+            do kill();
+        }
+        return;
+    }
+
+    /*
+     * Draws Frogger on the screen at its coordinates. Frogger looks like |O|. If Frogger is dead, draws an X over him
+     */
+    method void draw() {
+        // Draw white rectangle so you can see dead Frogger on car
+        if (~alive) {
+            do Screen.setColor(false);
+            do Screen.drawRectangle(x - halfWidth - 1, y - halfWidth - 1, x + halfWidth + 1, y + halfWidth + 1);
+        }
+
+        // Draw |O|
+        do Screen.setColor(true);
+        do Screen.drawCircle(x, y, halfWidth - 1);
+        do Screen.drawLine(x + halfWidth, y + halfWidth, x + halfWidth, y - halfWidth);
+        do Screen.drawLine(x - halfWidth, y + halfWidth, x - halfWidth, y - halfWidth);
+        do Screen.setColor (false);
+        do Screen.drawCircle(x, y, halfWidth - 4);
+
+        // Draw thick x over dead Frogger
+        if (~alive) {
+            do Screen.setColor(true);
+            // 3 thick
+            do Screen.drawLine(x + halfWidth, y + halfWidth, x - halfWidth, y - halfWidth);
+            do Screen.drawLine(x + halfWidth + 1, y + halfWidth, x - halfWidth + 1, y - halfWidth);
+            do Screen.drawLine(x + halfWidth - 1, y + halfWidth, x - halfWidth - 1, y - halfWidth);
+
+            do Screen.drawLine(x - halfWidth, y + halfWidth, x + halfWidth, y - halfWidth);
+            do Screen.drawLine(x - halfWidth + 1, y + halfWidth, x + halfWidth + 1, y - halfWidth);
+            do Screen.drawLine(x - halfWidth - 1, y + halfWidth, x + halfWidth - 1, y - halfWidth);
+        }
+
+        return;
+    }
+
+    /*
+     * Returns Frogger to life and moves him back to starting point
+     */
+    method void reset() {
+        let alive = true;
+        let x = 256;
+        let lane = 0;
+        let y = laneYArray[lane] + halfWidth;
+        return;
+    }
+
+    /*
+     * Returns status of Frogger being alive or not
+     *
+     * return   true if Frogger is alive
+     */
+    method boolean isAlive() {
+        return alive;
+    }
+
+    /*
+     * Sets Frogger as not alive
+     */
+    method void kill() {
+        let alive = false;
+        return;
+    }
+
+    /*
+     * Returns the current lane number Frogger is in
+     *
+     * return   Frogger's current lane
+     */
+    method int currentLane() {
+        return lane;
+    }
+
+    /*
+     * Returns the left edge coordinate of Frogger for collision checks
+     *
+     * return   Left edge x value for Frogger
+     */
+    method int getLeftEdge() {
+        return x - halfWidth;
+    }
+
+    /*
+     * Returns the right edge coordinate of Frogger for collision checks
+     *
+     * return   Right edge x value for Frogger
+     */
+    method int getRightEdge() {
+        return x + halfWidth;
+    }
+
+    /*
+     * Disposes of this object
+     */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
 }

@@ -1,11 +1,498 @@
 function Frogger.new 0
-push constant 0
+push constant 7
 call Memory.alloc 1
 pop pointer 0
+push constant 0
+not
+pop this 5
+push constant 256
+pop this 0
+push constant 7
+pop this 2
+push constant 7
+pop this 3
+push constant 0
+pop this 4
+push constant 13
+call Array.new 1
+pop this 6
+push constant 0
+push this 6
+add
+push constant 236
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push this 6
+add
+push constant 217
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push this 6
+add
+push constant 198
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push this 6
+add
+push constant 179
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push this 6
+add
+push constant 160
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push this 6
+add
+push constant 141
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push this 6
+add
+push constant 121
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push this 6
+add
+push constant 100
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push this 6
+add
+push constant 81
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 9
+push this 6
+add
+push constant 62
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 10
+push this 6
+add
+push constant 43
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 11
+push this 6
+add
+push constant 24
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 12
+push this 6
+add
+push constant 4
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push this 4
+push this 6
+add
+pop pointer 1
+push that 0
+push this 2
+add
+pop this 1
 push pointer 0
 return
-function Frogger.run 0
+function Frogger.moveUp 0
 push argument 0
 pop pointer 0
+push this 4
+push constant 1
+add
+pop this 4
+push this 4
+push this 6
+add
+pop pointer 1
+push that 0
+push this 2
+add
+pop this 1
+push constant 0
+return
+function Frogger.moveDown 0
+push argument 0
+pop pointer 0
+push this 4
+push constant 0
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 4
+push constant 1
+sub
+pop this 4
+push this 4
+push this 6
+add
+pop pointer 1
+push that 0
+push this 2
+add
+pop this 1
+label IF_FALSE0
+push constant 0
+return
+function Frogger.moveRight 0
+push argument 0
+pop pointer 0
+push this 0
+push this 3
+add
+pop this 0
+push this 0
+push this 2
+add
+call Main.getXMax 0
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+push this 2
+sub
+pop this 0
+label IF_FALSE0
+push constant 0
+return
+function Frogger.moveLeft 0
+push argument 0
+pop pointer 0
+push this 0
+push this 3
+sub
+pop this 0
+push this 0
+push this 2
+sub
+call Main.getXMin 0
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+push this 2
+add
+pop this 0
+label IF_FALSE0
+push constant 0
+return
+function Frogger.moveWithLog 0
+push argument 0
+pop pointer 0
+push this 0
+push argument 1
+add
+pop this 0
+push this 0
+push this 2
+sub
+call Main.getXMin 0
+lt
+push this 0
+push this 2
+add
+call Main.getXMax 0
+gt
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Frogger.kill 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Frogger.draw 0
+push argument 0
+pop pointer 0
+push this 5
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 2
+sub
+push constant 1
+sub
+push this 1
+push this 2
+sub
+push constant 1
+sub
+push this 0
+push this 2
+add
+push constant 1
+add
+push this 1
+push this 2
+add
+push constant 1
+add
+call Screen.drawRectangle 4
+pop temp 0
+label IF_FALSE0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 1
+push this 2
+push constant 1
+sub
+call Screen.drawCircle 3
+pop temp 0
+push this 0
+push this 2
+add
+push this 1
+push this 2
+add
+push this 0
+push this 2
+add
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+sub
+push this 1
+push this 2
+add
+push this 0
+push this 2
+sub
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 1
+push this 2
+push constant 4
+sub
+call Screen.drawCircle 3
+pop temp 0
+push this 5
+not
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 2
+add
+push this 1
+push this 2
+add
+push this 0
+push this 2
+sub
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+add
+push constant 1
+add
+push this 1
+push this 2
+add
+push this 0
+push this 2
+sub
+push constant 1
+add
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+add
+push constant 1
+sub
+push this 1
+push this 2
+add
+push this 0
+push this 2
+sub
+push constant 1
+sub
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+sub
+push this 1
+push this 2
+add
+push this 0
+push this 2
+add
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+sub
+push constant 1
+add
+push this 1
+push this 2
+add
+push this 0
+push this 2
+add
+push constant 1
+add
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push this 2
+sub
+push constant 1
+sub
+push this 1
+push this 2
+add
+push this 0
+push this 2
+add
+push constant 1
+sub
+push this 1
+push this 2
+sub
+call Screen.drawLine 4
+pop temp 0
+label IF_FALSE1
+push constant 0
+return
+function Frogger.reset 0
+push argument 0
+pop pointer 0
+push constant 0
+not
+pop this 5
+push constant 256
+pop this 0
+push constant 0
+pop this 4
+push this 4
+push this 6
+add
+pop pointer 1
+push that 0
+push this 2
+add
+pop this 1
+push constant 0
+return
+function Frogger.isAlive 0
+push argument 0
+pop pointer 0
+push this 5
+return
+function Frogger.kill 0
+push argument 0
+pop pointer 0
+push constant 0
+pop this 5
+push constant 0
+return
+function Frogger.currentLane 0
+push argument 0
+pop pointer 0
+push this 4
+return
+function Frogger.getLeftEdge 0
+push argument 0
+pop pointer 0
+push this 0
+push this 2
+sub
+return
+function Frogger.getRightEdge 0
+push argument 0
+pop pointer 0
+push this 0
+push this 2
+add
+return
+function Frogger.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
 push constant 0
 return
