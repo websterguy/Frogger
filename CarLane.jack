@@ -1,0 +1,129 @@
+class CarLane {
+    static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
+    field int y;
+    field Array carArray;
+
+    /*
+     * Initializes static values. Must be run at start of program.
+     *
+     * param xMin   left border of play area
+     * param xMax   right border of play area
+     */
+    function void init(int xMin, int xMax) {
+        let X_MIN = xMin + 1;
+        let X_MAX = xMax - 1;
+        return;
+    }
+
+    /*
+     * Constructor creates a new car lane and fills it with cars based on the lane number and level number
+     *
+     * param yNew   y coordinate for the lane
+     * param lane   the number of the lane, 0 = bottom car lane, 4 = top
+     * param level  the current game level
+     */
+    constructor CarLane new(int yNew, int lane, int level) {
+        let y = yNew;
+
+        let carArray = Array.new(5);
+
+        if (lane = 0) { // 3 slow cars moving left
+            let carArray[0] = Car.new(-1, 220, y + 1, 0, 0, false, false, true);
+            let carArray[1] = Car.new(-1, 300, y + 1, 0, 0, false, false, true);
+            let carArray[2] = Car.new(-1, X_MAX, y + 1, 0, 0, true, false, true);
+        }
+        if (lane = 1) { // 3 slow cars moving right
+            let carArray[0] = Car.new(1, 235, y + 1, 0, 0, false, false, true);
+            let carArray[1] = Car.new(1, 315, y + 1, 0, 0, false, false, true);
+            let carArray[2] = Car.new(1, X_MIN, y + 1, 0, 0, false, false, false);
+        }
+        if (lane = 2) { // 3 medium speed cars moving left
+            let carArray[0] = Car.new(-2, 235, y + 1, 0, 1, false, false, true);
+            let carArray[1] = Car.new(-2, 315, y + 1, 0, 1, false, false, true);
+            let carArray[2] = Car.new(-2, X_MAX, y + 1, 0, 1, true, false, false);
+        }
+        if (lane = 3) { // 1 medium car moving right
+            let carArray[0] = Car.new(2, X_MIN, y + 1, 0, 1, false, false, false);
+        }
+        if (lane = 4) { // 2 fast trucks moving left
+            let carArray[0] = Car.new(-3, 260, y + 1, 0, 2, false, false, true);
+            let carArray[1] = Car.new(-3, 370, y + 1, 0, 2, true, false, true);
+        }
+        return this;
+    }
+
+    /*
+     * Cycles through array of cars and updates their positions if they exist
+     */
+    method void updateCars() {
+        var int i;
+        var Car currentCar;
+        let i = 0;
+        while (i < 5) {
+            if (~(carArray[i] = null)) {
+                let currentCar = carArray[i];
+                if (currentCar.isActive()) {
+                    do currentCar.move();
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Cycles through array of cars and draws them if they exist. Resets them if they have moved off screen.
+     */
+    method void drawCars() {
+        var int i;
+        var Car currentCar;
+
+        do Screen.setColor(false);
+        do Screen.drawRectangle(X_MIN, y, X_MAX, y + 16);
+        let i = 0;
+        while (i < 5) {
+            if(~(carArray[i] = null)) {
+                let currentCar = carArray[i];
+                if (currentCar.isActive()) {
+                    do currentCar.draw();
+                }
+                else {
+                    do currentCar.reset();
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Returns true if any car in the lane has collided with Frogger
+     *
+     * return   true if there has been a collision between car and Frogger
+     */
+    method boolean checkCollision(int froggerLeft, int froggerRight) {
+        var int i;
+        var Car currentCar;
+
+        let i = 0;
+        while (i < 5) {
+            if (~(carArray[i] = null)) {
+                let currentCar = carArray[i];
+                // if car left edge left of Frogger's right, but car's right edge not left of frogger's left, there was a collision
+                if ((currentCar.getLeftEdge() < froggerRight) & ~(currentCar.getRightEdge() < froggerLeft)) {
+                    return true;
+                }
+            }
+            let i = i + 1;
+        }
+        return false;
+    }
+
+    /*
+     * Disposes of this object
+     */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
