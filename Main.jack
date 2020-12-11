@@ -1,12 +1,15 @@
+/*
+ * Creates Frogger game starting at splash screen, then a level of Frogger where the user completes the level by filling all goal spots or fails by dying.
+ */
 class Main {
-    static int X_MAX, X_MIN;
+    static int X_MAX, X_MIN; // Left and right edges of playable area
 
     function void main() {
         var Array carLanes, waterLanes, goals;
         var Frogger frogger;
-        var char key;
-        var boolean justMoved, carCollisionCheck, goalCheck;
-        var int logCollisionCheck;
+        var char key; // user input
+        var boolean justMoved, carCollisionCheck, goalCheck, gameWon;
+        var int logCollisionCheck; // 0 if no collision
         var int lives, timer, respawnCountdown;
         var int i;
         var CarLane currentCarLane;
@@ -20,23 +23,27 @@ class Main {
         let X_MIN = 128;
         let X_MAX = 384;
 
+        // Initialize statics in classes
         do Car.init();
         do Log.init();
         do CarLane.init(X_MIN, X_MAX);
         do WaterLane.init(X_MIN, X_MAX);
 
+        // Set up arrays of lanes and goals
         let carLanes = Array.new(5);
         let carLanes[0] = CarLane.new(216, 0, 1);
         let carLanes[1] = CarLane.new(197, 1, 1);
         let carLanes[2] = CarLane.new(178, 2, 1);
         let carLanes[3] = CarLane.new(159, 3, 1);
         let carLanes[4] = CarLane.new(140, 4, 1);
+
         let waterLanes = Array.new(5);
         let waterLanes[0] = WaterLane.new(99, 0, 1);
         let waterLanes[1] = WaterLane.new(80, 1, 1);
         let waterLanes[2] = WaterLane.new(61, 2, 1);
         let waterLanes[3] = WaterLane.new(42, 3, 1);
         let waterLanes[4] = WaterLane.new(23, 4, 1);
+
         let goals = Array.new(5);
         let goals[0] = Goal.new(X_MIN + 10, 2, 22, 20);
         let goals[1] = Goal.new(X_MIN + 64, 2, 22, 20);
@@ -44,36 +51,36 @@ class Main {
         let goals[3] = Goal.new(X_MIN + 173, 2, 22, 20);
         let goals[4] = Goal.new(X_MIN + 224, 2, 22, 20);
 
-        // let car2 = Car.new(2, 1, 1, 300, false);
-        // let car3 = Car.new(-3, 2, 0, 200, false);
-        // let car4 = Car.new(-1, 3, 1, 5, true);
-        // let car5 = Car.new(2, 4, 2, 150, false);
         let frogger = Frogger.new();
-        let justMoved = false;
+        let justMoved = false; // Used to avaoid double inputs
         let lives = 8;
-        let timer = 1440;
+        let timer = 1440; // Divided by 24 to show a timer of 60
         let respawnCountdown = 50; // 50 cycles until respawn after death
 
-
+        // Draw left and right edges of play area and dark top lane
         do Screen.drawLine(X_MIN, 0, X_MIN, 255);
         do Screen.drawLine(X_MAX, 0, X_MAX, 255);
         do Screen.drawRectangle(X_MIN, 0, X_MAX, 22);
 
-        // Lane dividers for diagnostic
+        // Draw dividers around bottom lane and median safe spaces
         do Screen.drawLine(X_MIN, 234, X_MAX, 234);
+        do Screen.drawLine(X_MIN, 139, X_MAX, 139);
+        do Screen.drawLine(X_MIN, 117, X_MAX, 117);
+
+        // Lane dividers for diagnostic
         // do Screen.drawLine(X_MIN, 215, X_MAX, 215);
         // do Screen.drawLine(X_MIN, 196, X_MAX, 196);
         // do Screen.drawLine(X_MIN, 177, X_MAX, 177);
         // do Screen.drawLine(X_MIN, 158, X_MAX, 158);
-        do Screen.drawLine(X_MIN, 139, X_MAX, 139);
-        do Screen.drawLine(X_MIN, 117, X_MAX, 117);
         // do Screen.drawLine(X_MIN, 98, X_MAX, 98);
         // do Screen.drawLine(X_MIN, 79, X_MAX, 79);
         // do Screen.drawLine(X_MIN, 60, X_MAX, 60);
         // do Screen.drawLine(X_MIN, 41, X_MAX, 41);
         // do Screen.drawLine(X_MIN, 22, X_MAX, 22);
 
-        while (lives > 0) {
+        // Main gameplay loop
+        while ((lives > 0) & ~gameWon) {
+            // Get movement key from user, but don't move if moved last cycle
             let key = Keyboard.keyPressed();
             if (~justMoved & frogger.isAlive()) {
                 if (key = 130) {
@@ -94,16 +101,22 @@ class Main {
                 }
             }
             else {
-                let justMoved = false;
+                let justMoved = false; // reset
             }
 
+            // Loop through all car lanes to update their car positions
             let i = 0;
             while (i < 5) {
+                // Assign current lane from array so can access methods
                 let currentCarLane = carLanes[i];
                 do currentCarLane.updateCars();
+
+                // Check for collisions with cars in same lane as Frogger
+                // Frogger dies if collision happens
                 if (frogger.currentLane() = (i + 1)) {
                     let carCollisionCheck = currentCarLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
                     if (carCollisionCheck) {
+                        // Don't keep killing Frogger if already dead
                         if (frogger.isAlive()) {
                             do frogger.kill();
                             let lives = lives - 1;
@@ -113,10 +126,13 @@ class Main {
                 let i = i + 1;
             }
 
+            // Update log positions
             let i = 0;
             while (i < 5) {
                 let currentWaterLane = waterLanes[i];
                 do currentWaterLane.updateLogs();
+
+                // Frogger must collide with one of the logs in his lane to stay alive
                 if (frogger.currentLane() = (i + 7)) {
                     let logCollisionCheck = currentWaterLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
                     if (logCollisionCheck = 0) {
@@ -129,6 +145,7 @@ class Main {
                 let i = i + 1;
             }
 
+            // Check if Frogger made it squarely into a goal space when he hits the top lane
             if (frogger.currentLane() = 12) {
                 let i = 0;
                 while (i < 5) {
@@ -138,6 +155,7 @@ class Main {
                     let i = i + 1;
                 }
 
+                // Reset Frogger's position and the timer if he made it
                 if (goalCheck) {
                     do frogger.reset();
                     let timer = 1440;
@@ -148,14 +166,17 @@ class Main {
                         let lives = lives - 1;
                     }
                 }
+                // Reset checks
                 let logCollisionCheck = 0;
                 let goalCheck = false;
             }
 
+            // If Frogger is on a log, drag him with it
             if (~(logCollisionCheck = 0) & frogger.isAlive()) {
                 do frogger.moveWithLog(logCollisionCheck);
             }
 
+            // Print out lives and timer status
             do Output.moveCursor(1, 4);
             do Output.printString(livesLabel);
             do Output.moveCursor(2, 6);
@@ -164,22 +185,30 @@ class Main {
             do Output.printString(timeLabel);
             do Output.moveCursor(2, 55);
             if (timer > 239) {
+                // Double digit XX
                 do Output.printInt(timer / 24);
             }
             else {
+                // Move single digit timer display to 0X
                 do Output.printInt(0);
                 do Output.printInt(timer/24);
             }
+
+            // Clear the bottom and median lanes
             do Screen.setColor(false);
             do Screen.drawRectangle(X_MIN + 1, 235, X_MAX - 1, 255);
             do Screen.drawRectangle(X_MIN + 1, 118, X_MAX - 1, 138);
             do Screen.setColor(true);
 
+            // If Frogger is dead, check for respawn and reset the play area if it's time
             if (respawnCountdown = 0) {
+                // reset
                 let respawnCountdown = 50;
                 let logCollisionCheck = 0;
                 do frogger.reset();
                 let timer = 1440;
+
+                // Redraw the play area edges and clear the space directly outside (in case Frogger died at the edge from a log dragging him)
                 do Screen.drawLine(X_MIN, 0, X_MIN, 255);
                 do Screen.drawLine(X_MAX, 0, X_MAX, 255);
                 do Screen.drawRectangle(X_MIN, 0, X_MAX, 22);
@@ -187,10 +216,12 @@ class Main {
                 do Screen.drawRectangle(X_MIN - 10, 0, X_MIN - 1, 255);
                 do Screen.drawRectangle(X_MAX + 1, 0, X_MAX + 10, 255);
             }
+            // Countdown is dead and not respawned yet
             if (respawnCountdown > -1 & ~(frogger.isAlive())) {
                 let respawnCountdown = respawnCountdown - 1;
             }
 
+            // Loop over car lanes to draw the cars now
             let i = 0;
             while (i < 5) {
                 let currentCarLane = carLanes[i];
@@ -198,6 +229,7 @@ class Main {
                 let i = i + 1;
             }
 
+            // Draw logs
             let i = 0;
             while (i < 5) {
                 let currentWaterLane = waterLanes[i];
@@ -205,6 +237,7 @@ class Main {
                 let i = i + 1;
             }
 
+            // Draw goals
             let i = 0;
             while (i < 5) {
                 let currentGoal = goals[i];
@@ -212,30 +245,39 @@ class Main {
                 let i = i + 1;
             }
 
+            // Kill Frogger if ran out of time
             let timer = timer - 1;
             if (timer < 1) {
-                let timer = 0;
+                let timer = 0; // don't let timer go negative
                 if (frogger.isAlive()) {
                     do frogger.kill();
                     let lives = lives - 1;
                 }
             }
 
+            // Draw Frogger wherever he is, alive or dead
             do frogger.draw();
 
-            // if (frogger.currentCarLane() > 5 & frogger.isAlive()) {
-            //     do frogger.moveWithLog(5);
-            // }
-
+            // Around 60ms between cycles
             do Sys.wait(60);
         }
         return;
     }
 
+    /*
+     * Returns the value of X_MAX
+     *
+     * return   The maximum value for the right edge of playable area
+     */
     function int getXMax() {
         return X_MAX;
     }
 
+    /*
+     * Returns the value of X_MIN
+     *
+     * return   The minimum value for the left edge of playable area
+     */
     function int getXMin() {
         return X_MIN;
     }
