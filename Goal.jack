@@ -1,0 +1,88 @@
+/*
+ * The goal for Frogger to reach. Frogger occupies the goal for the rest of the level, and level ends when all goals are full. Frogger must enter the goal straight on, and will die if he hangs off the side at all
+ */
+class Goal {
+    field int x, y, width, height;
+    field boolean occupied;
+
+    /*
+     * Constructor creates a new goal and sets all fields
+     *
+     * param xNew       x coordinate of goal's top left corner
+     * param yNew       y coordinate of goal's top left corner
+     * param widthNew   width of goal
+     * param heightNew  height of goal
+     */
+    constructor Goal new(int xNew, int yNew, int widthNew, int heightNew) {
+        let x = xNew;
+        let y = yNew;
+        let width = widthNew;
+        let height = heightNew;
+        let occupied = false;
+        return this;
+    }
+
+    /*
+     * Checks that Frogger's body has landed completely within the goal while it is unoccupied. If the left of Frogger is past the left edge or the right of Frogger is past the right edge, he dies. If it is already occupied, he dies. If he lands in the goal, it becomes occupied.
+     *
+     * param froggerLeft    Frogger's left x coordinate
+     * param froggerRight   Frogger's right x coordinate
+     */
+    method boolean checkCollision(int froggerLeft, int froggerRight) {
+        if ((froggerLeft < x) | (froggerRight > (x + width))) {
+            return false;
+        }
+        else {
+            if (occupied) {
+                return false;
+            }
+            else {
+                let occupied = true;
+                return true;
+            }
+        }
+    }
+
+    /*
+     * Resets the occupied status to false
+     */
+    method void reset() {
+        let occupied = false;
+        return;
+    }
+
+    /*
+     * Draws the goal on the screen as a white rectangle. Occupied goals contain a smile
+     */
+    method void draw() {
+        var int smileX, smileY, smileRadius, leftEyeX, rightEyeX, eyeY, eyeRadius;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + width, y + height);
+
+        if (occupied) {
+            let smileX = x + (width / 2);
+            let smileY = y + (height * 4 / 7);
+            let smileRadius = (smileY - y) * 3 / 5;
+            let leftEyeX = smileX - (width / 4);
+            let rightEyeX = smileX + (width / 4);
+            let eyeY = y + (height / 3);
+            let eyeRadius = (eyeY - y) / 3;
+            do Screen.setColor(true);
+            do Screen.drawCircle(smileX, smileY, smileRadius);
+            do Screen.setColor(false);
+            do Screen.drawRectangle(x, y, x + width, y + smileY);
+            do Screen.setColor(true);
+            do Screen.drawCircle(leftEyeX, eyeY, eyeRadius);
+            do Screen.drawCircle(rightEyeX, eyeY, eyeRadius);
+        }
+        return;
+    }
+
+    /*
+     * Disposes of this object
+     */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
