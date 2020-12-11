@@ -1,108 +1,187 @@
 /*
-  Class for vehicle obstacles that move horizontally across the screen at a given speed.
-
-  Author: Kevin Webb
-*/
+ * Class for vehicle obstacles that move horizontally across the screen at a given speed.
+ *
+ * Author: Kevin Webb
+ */
 class Car {
-  field int velocity; // positive speed moving left->right, negative moving right->left
-  field int type; // 1 car, 2 racecar, 3 truck
-  field int lane;
-  field int x, y, width, widthMax, height, xMin, xMax;
-  field boolean growing, shrinking, active;
+    field int velocity; // positive speed moving left->right, negative moving right->left
+    field int type; // 0 short, 1 normal, 3 long
+    field int lane;
+    field int x, y, width, widthMax, respawnTimer;
+    field boolean growing, shrinking, active;
+    static int HEIGHT;
+    static Array TYPE_WIDTH_ARRAY; // 0 = short, 1 = normal, 2 = long
 
-  constructor Car new (int velocityNew, int laneNew, int typeNew) {
-    let velocity = velocityNew;
-    let lane = laneNew;
-    let type = typeNew;
-    let width = 0;
-    let height = 15;
-    let growing = true;
-    let shrinking = false;
-    let active = true;
-    let xMin = 128;
-    let xMax = 384;
-
-    if (velocity < 0) {
-      let x = xMax;
-    }
-    else {
-      let x = xMin;
+    /*
+     * Initializes static values. Must be run at the beginning of the program.
+     */
+    function void init() {
+        let HEIGHT = 15;
+        let TYPE_WIDTH_ARRAY = Array.new(3);
+        let TYPE_WIDTH_ARRAY[0] = 20;
+        let TYPE_WIDTH_ARRAY[1] = 25;
+        let TYPE_WIDTH_ARRAY[2] = 35;
+        return;
     }
 
-    if (lane = 1) {
-      let y = 210;
-    }
-    if (lane = 2) {
-      let y = 190;
-    }
-    if (lane = 3) {
-      let y = 170;
-    }
+    /*
+     * Constructor for a new Car. Sets velocity, car lane, car type, x position, and if car is growing
+     *
+     * param velocityNew    number of pixels to move car each update, >0 for left to right, <0 for right to left
+     * param xNew           x coordinate of top left of car
+     * param yNew           y coordinate of top left of car
+     * param widthNew       width for cars growing from left
+     * param typeNew        car type. 0 short, 1 normal, 3 long
+     * param growingNew     true if car is generated near edge of screen, growing away from the edge
+     * param shrinkingNew   true if car is generated near edge of screen, shrinking towards edge
+     * param activeNew      true if car is currently visible
+     */
+    constructor Car new(int velocityNew, int xNew, int yNew, int widthNew, int typeNew, boolean growingNew, boolean shrinkingNew, boolean activeNew) {
+        let velocity = velocityNew;
+        let type = typeNew;
+        let growing = growingNew;
+        let shrinking = shrinkingNew;
+        let active = activeNew;
+        let respawnTimer = 20;
 
-    if (type = 1) {
-      let widthMax = 30;
-    }
+        let x = xNew;
+        let y = yNew;
+        let widthMax = TYPE_WIDTH_ARRAY[type];
 
-    return this;
-  }
+        // Calculate initial width of car if it's still growing
+        if (growing) {
+            if (velocity > 0) {
+                let width = widthNew;
+            }
+            else {
+                let width = Main.getXMax() - x;
+            }
+        }
+        else {
+            if (shrinking) {
+                let width = Main.getXMax() - x;
+            }
+            else {
+                let width = widthMax;
+            }
+        }
 
-  method void move() {
-    //do Screen.setColor(false);
-    //do Screen.drawRectangle(x, y, x + width, y + height);
-
-    if (growing) {
-      let width = Math.min(width + Math.abs(velocity), widthMax);
-      if (width = widthMax) {
-        let growing = false;
-      }
-      if (velocity < 0) {
-        let x = x + velocity;
-      }
-    }
-    else {
-      let x = x + velocity;
-    }
-
-
-    if (~shrinking) {
-      if ((velocity < 0) & (x < xMin)) {
-        let x = xMin;
-        let shrinking = true;
-      }
-      if ((velocity > 0) & ((x + width) > xMax)) {
-        let width = xMax - x;
-        let shrinking = true;
-      }
-    }
-    else {
-      if (velocity < 0) {
-        let x = xMin;
-      }
-      let width = width - Math.abs(velocity);
+        return this;
     }
 
-    //do Output.printInt(width);
-    do Screen.setColor(true);
-    if (width - 1 < 0) {
-      let active = false;
+    /*
+     * Decrements respawnTimer by abs(velocity), and respawns car at edge of screen if the timer < 0
+     */
+    method void reset() {
+        // Set at right of screen if moving left or left of screen moving right
+        if (respawnTimer < 0) {
+            if (velocity < 0) {
+                let x = Main.getXMax();
+            }
+            else {
+                let x = Main.getXMin();
+            }
+
+            let active = true;
+            let growing = true;
+            let shrinking = false;
+            let width = 0;
+            let respawnTimer = 20;
+        }
+        else {
+            let respawnTimer = respawnTimer - Math.abs(velocity);
+        }
+        return;
     }
 
-    return;
-  }
+    /*
+     * Calculates new position and width of car after moving 1 velocity unit
+     */
+    method void move() {
+        // If growing, Calculate new width based on the velocity, but stop at widthMax
+        // x coordinate doesn't change if growing to the right
+        if (growing) {
+            let width = Math.min(width + Math.abs(velocity), widthMax);
+            if (width = widthMax) {
+                let growing = false;
+            }
+            if (velocity < 0) {
+                let x = x + velocity;
+            }
+        }
+        else {
+            let x = x + velocity;
+        }
 
-  method void draw() {
-    do Screen.drawRectangle(x, y, x + width, y + height);
-    return;
-  }
+        // If not shrinking and run over the edge, move back and start shrinking
+        if (~shrinking) {
+            if ((velocity < 0) & (x < Main.getXMin())) {
+                let x = Main.getXMin();
+                let shrinking = true;
+            }
+            if ((velocity > 0) & ((x + width) > Main.getXMax())) {
+                let width = Main.getXMax() - x;
+                let shrinking = true;
+            }
+        }
+        // If shrinking calculate new width based on velocity.
+        // x coordinate doesn't change if shrinking to the left
+        else {
+            if (velocity < 0) {
+                let x = Main.getXMin();
+            }
+            let width = width - Math.abs(velocity);
+        }
 
-  method boolean isActive() {
-    return active;
-  }
+        // If the car has shrunk all the way, it has left the screen and is inactive
+        if (width - 1 < 0) {
+            let active = false;
+        }
 
-  /* Disposes of this object */
-  method void dispose() {
-    do Memory.deAlloc(this);
-    return;
-  }
+        return;
+    }
 
+    /*
+     * Draws the rectangular car on the screen
+     */
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + width, y + HEIGHT);
+        return;
+    }
+
+    /*
+     * Returns if the car is currently active
+     *
+     * return    true if active
+     */
+    method boolean isActive() {
+        return active;
+    }
+
+    /*
+     * Returns the left edge coordinate of the car for collision checks
+     *
+     * return   Left edge x value for the car
+     */
+    method int getLeftEdge() {
+        return x;
+    }
+
+    /*
+     * Returns the right edge coordinate of the car for collision checks
+     *
+     * return   Right edge x value for the car
+     */
+    method int getRightEdge() {
+        return x + width;
+    }
+
+    /*
+     * Disposes of this object
+     */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
 }
