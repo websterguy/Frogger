@@ -2,6 +2,8 @@ class CarLane {
     static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
     field int y;
     field Array carArray;
+    field Car currentCar; // For assigning out of array so methods can be accessed
+    field int i;
 
     /*
      * Initializes static values. Must be run at start of program.
@@ -56,8 +58,6 @@ class CarLane {
      * Cycles through array of cars and updates their positions if they exist
      */
     method void updateCars() {
-        var int i;
-        var Car currentCar;
         let i = 0;
         while (i < 5) {
             if (~(carArray[i] = null)) {
@@ -75,9 +75,6 @@ class CarLane {
      * Cycles through array of cars and draws them if they exist. Resets them if they have moved off screen.
      */
     method void drawCars() {
-        var int i;
-        var Car currentCar;
-
         do Screen.setColor(false);
         do Screen.drawRectangle(X_MIN, y, X_MAX, y + 16);
         let i = 0;
@@ -102,9 +99,6 @@ class CarLane {
      * return   true if there has been a collision between car and Frogger
      */
     method boolean checkCollision(int froggerLeft, int froggerRight) {
-        var int i;
-        var Car currentCar;
-
         let i = 0;
         while (i < 5) {
             if (~(carArray[i] = null)) {
@@ -123,6 +117,7 @@ class CarLane {
      * Disposes of this object
      */
     method void dispose() {
+        do carArray.dispose();
         do Memory.deAlloc(this);
         return;
     }

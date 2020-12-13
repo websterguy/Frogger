@@ -2,6 +2,8 @@ class WaterLane {
     static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
     field int y;
     field Array logArray;
+    field Log currentLog;
+    field int i;
     field boolean logIsGrowing;
 
     /*
@@ -69,9 +71,6 @@ class WaterLane {
      * Cycles through array of logs and updates their positions if they exist
      */
     method void updateLogs() {
-        var int i;
-        var Log currentLog;
-
         let logIsGrowing = false;
         let i = 0;
         while (i < 5) {
@@ -93,9 +92,6 @@ class WaterLane {
      * Cycles through array of logs and draws them if they exist. Resets them if they have moved off screen.
      */
     method void drawLogs() {
-        var int i;
-        var Log currentLog;
-
         do Screen.setColor(false);
         do Screen.drawRectangle(X_MIN, y, X_MAX, y + 16);
         let i = 0;
@@ -122,9 +118,6 @@ class WaterLane {
      * return   The velocity of the log Frogger is on, or 0 if Frogger is not on one.
      */
     method int checkCollision(int froggerLeft, int froggerRight) {
-        var int i;
-        var Log currentLog;
-
         let i = 0;
         while (i < 5) {
             if (~(logArray[i] = null)) {
@@ -143,6 +136,7 @@ class WaterLane {
      * Disposes of this object
      */
     method void dispose() {
+        do logArray.dispose();
         do Memory.deAlloc(this);
         return;
     }
