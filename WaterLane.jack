@@ -136,6 +136,15 @@ class WaterLane {
      * Disposes of this object
      */
     method void dispose() {
+        let i = 0;
+        while (i < 5) {
+            if (~(logArray[i] = null)) {
+                let currentLog = logArray[i];
+
+                do currentLog.dispose();
+            }
+            let i = i + 1;
+        }
         do logArray.dispose();
         do Memory.deAlloc(this);
         return;

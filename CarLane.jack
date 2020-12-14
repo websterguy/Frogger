@@ -117,6 +117,15 @@ class CarLane {
      * Disposes of this object
      */
     method void dispose() {
+        let i = 0;
+        while (i < 5) {
+            if (~(carArray[i] = null)) {
+                let currentCar = carArray[i];
+
+                do currentCar.dispose();
+            }
+            let i = i + 1;
+        }
         do carArray.dispose();
         do Memory.deAlloc(this);
         return;

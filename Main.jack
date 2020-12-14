@@ -40,9 +40,7 @@ class Main {
 
         // Set up arrays of lanes and goals
         let carLanes = Array.new(5);
-
         let waterLanes = Array.new(5);
-
         let goals = Array.new(5);
 
         // Lane dividers for diagnostic
@@ -65,6 +63,7 @@ class Main {
             let respawnCountdown = 50; // 50 cycles until respawn after death
             let score = 0;
             let highestLane = 0;
+            let gameWon = false;
 
             // Splash screen menu
             do Screen.clearScreen();
@@ -82,6 +81,7 @@ class Main {
             do Screen.clearScreen();
             do Output.moveCursor(2, 7);
             do Output.printString(mainInstruction);
+            do Screen.setColor(true);
             do Screen.drawLine(230, 40, 230, 65);
             do Screen.drawLine(230, 40, 260, 40);
             do Screen.drawLine(260, 40, 260, 65);
@@ -103,7 +103,7 @@ class Main {
             do Output.moveCursor(19, 20);
             do Output.printString(goalInstruction);
 
-            //do Sys.wait(5000);
+            do Sys.wait(5000);
 
             // Draw left and right edges of play area and dark top lane
             do Screen.clearScreen();

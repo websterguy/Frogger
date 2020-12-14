@@ -179,6 +179,7 @@ class Frogger {
      * Disposes of this object
      */
     method void dispose() {
+        do laneYArray.dispose();
         do Memory.deAlloc(this);
         return;
     }
