@@ -1,5 +1,7 @@
 /*
  * Represents Frogger, the frog who jumps around the screen trying not to die
+ *
+ * Author: Kevin Webb
  */
 class Frogger {
     field int x, y, halfWidth, horizontalSpeed, lane;

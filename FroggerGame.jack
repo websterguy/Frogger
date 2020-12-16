@@ -1,3 +1,8 @@
+/*
+ * Creates Frogger game starting at splash screen, then a level of Frogger where the user completes the level by filling all goal spots or fails by dying.
+ *
+ * Author: Kevin Webb
+ */
 class FroggerGame {
     field int xMin, xMax; // Left and right edges of playable area
     field Array carLanes, waterLanes, goals;

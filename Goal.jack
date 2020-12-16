@@ -1,5 +1,7 @@
 /*
  * The goal for Frogger to reach. Frogger occupies the goal for the rest of the level, and level ends when all goals are full. Frogger must enter the goal straight on, and will die if he hangs off the side at all
+ *
+ * Author: Kevin Webb
  */
 class Goal {
     field int x, y, width, height;

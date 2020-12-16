@@ -1,4 +1,9 @@
-class WaterLane {
+/*
+ * Represents one of the 5 lanes in Frogger where logs float that Frogger jumps on to cross
+ *
+ * Author: Kevin Webb
+ */
+ class WaterLane {
     static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
     field int y;
     field Array logArray;

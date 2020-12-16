@@ -1,5 +1,7 @@
 /*
- * Creates Frogger game starting at splash screen, then a level of Frogger where the user completes the level by filling all goal spots or fails by dying.
+ * Runs a game of Frogger
+ *
+ * Author: Kevin Webb
  */
 class Main {
     static int X_MAX, X_MIN; // Left and right edges of playable area
@@ -18,7 +20,7 @@ class Main {
 
         let game = FroggerGame.new(X_MIN, X_MAX);
         do game.run();
-        
+
         return;
     }
 

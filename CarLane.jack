@@ -1,3 +1,8 @@
+/*
+ * Represents one of the 5 lanes in Frogger where cars drive that run over Frogger
+ *
+ * Author: Kevin Webb
+ */
 class CarLane {
     static int X_MIN, X_MAX; // For bounds of clearing lanes of objects
     field int y;
