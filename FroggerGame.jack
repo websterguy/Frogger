@@ -4,8 +4,8 @@ class FroggerGame {
     field Frogger frogger;
     field char key; // user input
     field boolean justMoved, carCollisionCheck, goalCheck, gameWon;
-    field int logCollisionCheck; // 0 if no collision
-    field int lives, timer, respawnCountdown, score, highestLane;
+    field int logCollisionCheck; // 0 if no collision, otherwise is velocity of log for moving Frogger with it
+    field int lives, timer, respawnCountdown, score, highestLane, froggersLane;
     field int i;
     field CarLane currentCarLane;
     field WaterLane currentWaterLane;
@@ -82,6 +82,7 @@ class FroggerGame {
         let respawnCountdown = 50; // 50 cycles until respawn after death
         let score = 0;
         let highestLane = 0;
+        let froggersLane = 0;
         let gameWon = false;
         return;
     }
@@ -189,196 +190,28 @@ class FroggerGame {
      */
     method void playGame() {
         while ((lives > 0) & ~gameWon) {
-            // Get movement key from user, but don't move if moved last cycle
-            let key = Keyboard.keyPressed();
-            if (~justMoved & frogger.isAlive()) {
-                if (key = 130) {
-                    do frogger.moveLeft();
-                    let justMoved = true;
-                }
-                if (key = 131) {
-                    do frogger.moveUp();
-                    // Update highest lane and score if new highest lane
-                    if (frogger.currentLane() > highestLane) {
-                        let highestLane = highestLane + 1;
-                        let score = score + 10;
-                    }
-                    let justMoved = true;
-                }
-                if (key = 132) {
-                    do frogger.moveRight();
-                    let justMoved = true;
-                }
-                if (key = 133) {
-                    do frogger.moveDown();
-                    let justMoved = true;
-                }
-            }
-            else {
-                let justMoved = false; // reset
+
+            do moveFrogger();
+
+            do updateCarLanes();
+
+            do updateWaterLanes();
+
+            do goalChecks();
+
+            do drawGameBoard();
+
+            if (~(frogger.isAlive())) {
+                do respawnCheck();
             }
 
-            // Loop through all car lanes to update their car positions
-            let i = 0;
-            while (i < 5) {
-                // Assign current lane from array so can access methods
-                let currentCarLane = carLanes[i];
-                do currentCarLane.updateCars();
-
-                // Check for collisions with cars in same lane as Frogger
-                // Frogger dies if collision happens
-                if (frogger.currentLane() = (i + 1)) {
-                    let carCollisionCheck = currentCarLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
-                    if (carCollisionCheck) {
-                        // Don't keep killing Frogger if already dead
-                        if (frogger.isAlive()) {
-                            do frogger.kill();
-                            let lives = lives - 1;
-                        }
-                    }
-                }
-                let i = i + 1;
-            }
-
-            // Update log positions
-            let i = 0;
-            while (i < 5) {
-                let currentWaterLane = waterLanes[i];
-                do currentWaterLane.updateLogs();
-
-                // Frogger must collide with one of the logs in his lane to stay alive
-                if (frogger.currentLane() = (i + 7)) {
-                    let logCollisionCheck = currentWaterLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
-                    if (logCollisionCheck = 0) {
-                        if (frogger.isAlive()) {
-                            do frogger.kill();
-                            let lives = lives - 1;
-                        }
-                    }
-                }
-                let i = i + 1;
-            }
-
-            // Check if Frogger made it squarely into a goal space when he hits the top lane
-            // Also checks if game is won
-            if (frogger.currentLane() = 12) {
-                let gameWon = true; // assume gameWon until see unoccupied goal
-                let i = 0;
-                while (i < 5) {
-                    let currentGoal = goals[i];
-                    // don't lose a true if one is obtained
-                    let goalCheck = (goalCheck | currentGoal.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge()));
-
-                    // Will be false if any goal is not occupied
-                    let gameWon = (gameWon & currentGoal.isOccupied());
-                    let i = i + 1;
-                }
-
-                // Reset Frogger's position and the timer if he made it
-                // Also calculate score from time for this round
-                if (goalCheck) {
-                    let score = score + ((timer / 24) * 10);
-                    do frogger.reset();
-                    let timer = 1440;
-                }
-                else {
-                    if (frogger.isAlive()) {
-                        do frogger.kill();
-                        let lives = lives - 1;
-                    }
-                }
-                // Reset checks
-                let logCollisionCheck = 0;
-                let goalCheck = false;
-            }
-
-            // If Frogger is on a log, drag him with it
-            if (~(logCollisionCheck = 0) & frogger.isAlive()) {
-                do frogger.moveWithLog(logCollisionCheck);
-            }
-
-            // Print out lives, score, and timer status
-            do Output.moveCursor(1, 4);
-            do Output.printString(livesLabel);
-            do Output.moveCursor(2, 4);
-            do Output.printInt(lives);
-            do Output.moveCursor(4, 4);
-            do Output.printString(scoreLabel);
-            do Output.moveCursor(5, 4);
-            do Output.printInt(score);
-            do Output.moveCursor(1, 54);
-            do Output.printString(timeLabel);
-            do Output.moveCursor(2, 56);
-            if (timer > 239) {
-                // Double digit XX
-                do Output.printInt(timer / 24);
-            }
-            else {
-                // Move single digit timer display to 0X
-                do Output.printInt(0);
-                do Output.printInt(timer / 24);
-            }
-
-            // Clear the bottom and median lanes
-            do Screen.setColor(false);
-            do Screen.drawRectangle(xMin + 1, 235, xMax - 1, 255);
-            do Screen.drawRectangle(xMin + 1, 118, xMax - 1, 138);
-            do Screen.setColor(true);
-
-            // If Frogger is dead, check for respawn and reset the play area if it's time
-            if (respawnCountdown = 0) {
-                // reset
-                let respawnCountdown = 50;
-                let logCollisionCheck = 0;
-                do frogger.reset();
-                let timer = 1440;
-                let highestLane = 0;
-
-                // Redraw the play area edges and clear the space directly outside (in case Frogger died at the edge from a log dragging him)
-                do Screen.drawLine(xMin, 0, xMin, 255);
-                do Screen.drawLine(xMax, 0, xMax, 255);
-                do Screen.drawRectangle(xMin, 0, xMax, 22);
-                do Screen.setColor(false);
-                do Screen.drawRectangle(xMin - 10, 0, xMin - 1, 255);
-                do Screen.drawRectangle(xMax + 1, 0, xMax + 10, 255);
-            }
-            // Countdown is dead and not respawned yet
-            if (respawnCountdown > -1 & ~(frogger.isAlive())) {
-                let respawnCountdown = respawnCountdown - 1;
-            }
-
-            // Loop over car lanes to draw the cars now
-            let i = 0;
-            while (i < 5) {
-                let currentCarLane = carLanes[i];
-                do currentCarLane.drawCars();
-                let i = i + 1;
-            }
-
-            // Draw logs
-            let i = 0;
-            while (i < 5) {
-                let currentWaterLane = waterLanes[i];
-                do currentWaterLane.drawLogs();
-                let i = i + 1;
-            }
-
-            // Draw goals
-            let i = 0;
-            while (i < 5) {
-                let currentGoal = goals[i];
-                do currentGoal.draw();
-                let i = i + 1;
-            }
+            do drawLanesAndGoals();
 
             // Kill Frogger if ran out of time
             let timer = timer - 1;
             if (timer < 1) {
                 let timer = 0; // don't let timer go negative
-                if (frogger.isAlive()) {
-                    do frogger.kill();
-                    let lives = lives - 1;
-                }
+                do killFrogger();
             }
 
             // Draw Frogger wherever he is, alive or dead
@@ -387,6 +220,242 @@ class FroggerGame {
             // Around 60ms between cycles
             do Sys.wait(60);
         }
+        return;
+    }
+
+    /*
+     * Gets user input of one of the 4 arrow keys and moves Frogger in the specified direction
+     * Then moves Frogger with a log if he is on one
+     * Has a check to avoid double user move on successive loops
+     */
+    method void moveFrogger() {
+        // Get movement key from user, but don't move if moved last cycle
+        let key = Keyboard.keyPressed();
+        if (~justMoved & frogger.isAlive()) {
+            if (key = 130) {
+                do frogger.moveLeft();
+                let justMoved = true;
+            }
+            if (key = 131) {
+                do frogger.moveUp();
+                // Update highest lane and score if new highest lane
+                if (frogger.currentLane() > highestLane) {
+                    let highestLane = highestLane + 1;
+                    let score = score + 10;
+                }
+                let justMoved = true;
+            }
+            if (key = 132) {
+                do frogger.moveRight();
+                let justMoved = true;
+            }
+            if (key = 133) {
+                do frogger.moveDown();
+                let justMoved = true;
+            }
+            // So don't have to keep accessing Frogger's field when checking
+            let froggersLane = frogger.currentLane();
+        }
+        else {
+            let justMoved = false; // reset
+        }
+
+        // If Frogger is on a log, drag him with it
+        if ((froggersLane > 6) & (froggersLane < 12)) {
+            if (frogger.isAlive()) {
+                do frogger.moveWithLog(logCollisionCheck);
+            }
+        }
+
+        return;
+    }
+
+    /*
+     * Updates positions of cars through updating each CarLane
+     * Checks for collisions with Frogger if Frogger is in a car lane
+     */
+    method void updateCarLanes() {
+        // Loop through all car lanes to update their car positions
+        let i = 0;
+        while (i < 5) {
+            // Assign current lane from array so can access methods
+            let currentCarLane = carLanes[i];
+            do currentCarLane.updateCars();
+
+            // Check for collisions with cars in same lane as Frogger
+            // Frogger dies if collision happens
+            if (froggersLane = (i + 1)) {
+                let carCollisionCheck = currentCarLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
+                if (carCollisionCheck) {
+                    do killFrogger();
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Updates positions of logs through updating each WaterLane
+     * Checks for collisions with Frogger if Frogger is in a water lane
+     */
+    method void updateWaterLanes() {
+        // Loop through all water lanes to update their log positions
+        let i = 0;
+        while (i < 5) {
+            let currentWaterLane = waterLanes[i];
+            do currentWaterLane.updateLogs();
+
+            // Frogger must collide with one of the logs in his lane to stay alive
+            if (froggersLane = (i + 7)) {
+                let logCollisionCheck = currentWaterLane.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge());
+                if (logCollisionCheck = 0) {
+                    do killFrogger();
+                }
+            }
+
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Check if Frogger made it squarely into a goal space when he hits the top lane
+     * Also checks if all goals are occupied and game is won
+     */
+    method void goalChecks() {
+        if (froggersLane = 12) { // goal lane
+            let gameWon = true; // assume gameWon until see unoccupied goal
+            let i = 0;
+            while (i < 5) {
+                let currentGoal = goals[i];
+                // don't lose a true if one is obtained
+                let goalCheck = (goalCheck | currentGoal.checkCollision(frogger.getLeftEdge(), frogger.getRightEdge()));
+
+                // Will be false if any goal is not occupied
+                let gameWon = (gameWon & currentGoal.isOccupied());
+
+                let i = i + 1;
+            }
+
+            // Reset Frogger's position and the timer if he made it
+            // Also calculate score from time for this round
+            if (goalCheck) {
+                let score = score + ((timer / 24) * 10);
+                do froggerReset();
+            }
+            else {
+                do killFrogger();
+            }
+        }
+        return;
+    }
+
+    /*
+     * Draws game UI elements of lives, score, timer, and lanes
+     */
+    method void drawGameBoard() {
+        // Print out lives, score, and timer status
+        do Output.moveCursor(1, 4);
+        do Output.printString(livesLabel);
+        do Output.moveCursor(2, 4);
+        do Output.printInt(lives);
+        do Output.moveCursor(4, 4);
+        do Output.printString(scoreLabel);
+        do Output.moveCursor(5, 4);
+        do Output.printInt(score);
+        do Output.moveCursor(1, 54);
+        do Output.printString(timeLabel);
+        do Output.moveCursor(2, 56);
+        if (timer > 239) {
+            // Double digit XX
+            do Output.printInt(timer / 24);
+        }
+        else {
+            // Move single digit timer display to 0X
+            do Output.printInt(0);
+            do Output.printInt(timer / 24);
+        }
+
+        // Clear the bottom and median lanes
+        do Screen.setColor(false);
+        do Screen.drawRectangle(xMin + 1, 235, xMax - 1, 255);
+        do Screen.drawRectangle(xMin + 1, 118, xMax - 1, 138);
+        do Screen.setColor(true);
+        return;
+    }
+
+    /*
+     * If the count down timer to respawn Frogger is up, respawn him and reset the timer.
+     * otherwise decrement the timer
+     *
+     * Precondition:    Frogger is dead
+     */
+    method void respawnCheck() {
+        // If Frogger is dead, check for respawn and reset the play area if it's time
+        if (respawnCountdown = 0) {
+            // reset
+            let respawnCountdown = 50;
+            do froggerReset();
+
+            // Redraw the play area edges and clear the space directly outside (in case Frogger died at the edge from a log dragging him)
+            do Screen.drawLine(xMin, 0, xMin, 255);
+            do Screen.drawLine(xMax, 0, xMax, 255);
+            do Screen.drawRectangle(xMin, 0, xMax, 22);
+            do Screen.setColor(false);
+            do Screen.drawRectangle(xMin - 10, 0, xMin - 1, 255);
+            do Screen.drawRectangle(xMax + 1, 0, xMax + 10, 255);
+        }
+        // Count down if dead and not respawned yet
+        if (respawnCountdown > -1) {
+            let respawnCountdown = respawnCountdown - 1;
+        }
+        return;
+    }
+
+    /*
+     * Draws cars, logs, and goals through drawing each lane
+     */
+    method void drawLanesAndGoals() {
+        let i = 0;
+        while (i < 5) {
+            let currentCarLane = carLanes[i];
+            do currentCarLane.drawCars();
+
+            let currentWaterLane = waterLanes[i];
+            do currentWaterLane.drawLogs();
+
+            let currentGoal = goals[i];
+            do currentGoal.draw();
+
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /*
+     * Kills Frogger if he is not currently alive and decrements lives
+     */
+    method void killFrogger() {
+        if (frogger.isAlive()) {
+            do frogger.kill();
+            let lives = lives - 1;
+        }
+        return;
+    }
+
+    /*
+     * Resets Frogger's position, the game timer, and goal checks
+     *
+     * Precondition:    Frogger is dead or has reached a goal
+     */
+    method void froggerReset() {
+        do frogger.reset();
+        let timer = 1440;
+        let froggersLane = 0;
+        let highestLane = 0;
+        let goalCheck = false;
+        let logCollisionCheck = 0;
         return;
     }
 
