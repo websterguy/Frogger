@@ -3,7 +3,7 @@ class WaterLane {
     field int y;
     field Array logArray;
     field Log currentLog;
-    field int i;
+    field int numLogs, i;
     field boolean logIsGrowing;
 
     /*
@@ -28,9 +28,9 @@ class WaterLane {
     constructor WaterLane new(int yNew, int lane, int level) {
         let y = yNew;
 
-        let logArray = Array.new(5);
-
         if (lane = 0) { // 4 medium speed medium length moving left
+            let numLogs = 4;
+            let logArray = Array.new(numLogs);
             let logArray[0] = Log.new(-3, X_MIN, y + 1, 48, 1, false, true, true);
             let logArray[1] = Log.new(-3, 200, y + 1, 0, 1, false, false, true);
             let logArray[2] = Log.new(-3, 275, y + 1, 0, 1, false, false, true);
@@ -38,6 +38,8 @@ class WaterLane {
             let logIsGrowing = true;
         }
         if (lane = 1) { // 4 slow medium length moving right
+            let numLogs = 4;
+            let logArray = Array.new(numLogs);
             let logArray[0] = Log.new(2, X_MIN, y + 1, 0, 1, false, false, false);
             let logArray[1] = Log.new(2, 170, y + 1, 0, 1, false, false, true);
             let logArray[2] = Log.new(2, 255, y + 1, 0, 1, false, false, true);
@@ -45,12 +47,16 @@ class WaterLane {
             let logIsGrowing = false;
         }
         if (lane = 2) { // 3 fast long moving right
+            let numLogs = 3;
+            let logArray = Array.new(numLogs);
             let logArray[0] = Log.new(4, X_MIN, y + 1, 0, 3, false, false, false);
             let logArray[1] = Log.new(4, 160, y + 1, 0, 3, false, false, true);
             let logArray[2] = Log.new(4, 300, y + 1, 0, 3, false, true, true);
             let logIsGrowing = false;
         }
         if (lane = 3) { // 4 medium speed short moing left
+            let numLogs = 4;
+            let logArray = Array.new(numLogs);
             let logArray[0] = Log.new(-2, 170, y + 1, 0, 0, false, false, true);
             let logArray[1] = Log.new(-2, 235, y + 1, 0, 0, false, false, true);
             let logArray[2] = Log.new(-2, 300, y + 1, 0, 0, false, false, true);
@@ -58,6 +64,8 @@ class WaterLane {
             let logIsGrowing = true;
         }
         if (lane = 4) { //4 medium speed medium long moving right
+            let numLogs = 4;
+            let logArray = Array.new(numLogs);
             let logArray[0] = Log.new(3, X_MIN, y + 1, 0, 2, false, false, false);
             let logArray[1] = Log.new(3, 135, y + 1, 0, 2, false, false, true);
             let logArray[2] = Log.new(3, 235, y + 1, 0, 2, false, false, true);
@@ -73,7 +81,7 @@ class WaterLane {
     method void updateLogs() {
         let logIsGrowing = false;
         let i = 0;
-        while (i < 5) {
+        while (i < numLogs) {
             if (~(logArray[i] = null)) {
                 let currentLog = logArray[i];
                 if (currentLog.isActive()) {
@@ -95,7 +103,7 @@ class WaterLane {
         do Screen.setColor(false);
         do Screen.drawRectangle(X_MIN, y, X_MAX, y + 16);
         let i = 0;
-        while (i < 5) {
+        while (i < numLogs) {
             if(~(logArray[i] = null)) {
                 let currentLog = logArray[i];
                 if (currentLog.isActive()) {
@@ -119,7 +127,7 @@ class WaterLane {
      */
     method int checkCollision(int froggerLeft, int froggerRight) {
         let i = 0;
-        while (i < 5) {
+        while (i < numLogs) {
             if (~(logArray[i] = null)) {
                 let currentLog = logArray[i];
                 // if Log left edge left of Frogger's right, but Log's right edge not left of frogger's left, there was a collision
@@ -137,7 +145,7 @@ class WaterLane {
      */
     method void dispose() {
         let i = 0;
-        while (i < 5) {
+        while (i < numLogs) {
             if (~(logArray[i] = null)) {
                 let currentLog = logArray[i];
 
